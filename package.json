@@ -12,9 +12,11 @@
     "mcp": "ts-node --esm src/mcp/server.ts"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.34",
     "@mastra/core": "^1.6.0",
     "@modelcontextprotocol/sdk": "^1.27.0",
     "axios": "^1.13.5",
+    "dotenv": "^17.3.1",
     "fastmcp": "^3.33.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

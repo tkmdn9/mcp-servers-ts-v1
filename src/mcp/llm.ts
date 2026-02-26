@@ -1,6 +1,7 @@
 import { Mastra } from '@mastra/core';
 import { Agent } from '@mastra/core/agent';
 import { createTool } from '@mastra/core/tools';
+import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { RedmineClient } from '../api/redmine';
 import { ServiceNowClient } from '../api/servicenow';
@@ -72,10 +73,7 @@ export const agent = new Agent({
     name: 'Enterprise Brain',
     instructions: `You are an AI assistant that can help with Redmine and ServiceNow tasks.
   Use the provided tools to fetch reports, create issues, and manage incidents.`,
-    model: {
-        providerId: 'OPENAI',
-        modelId: 'gpt-4o',
-    },
+    model: openai('gpt-4o'),
     tools: {
         getRedmineIssues,
         createRedmineIssue,
