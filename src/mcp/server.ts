@@ -2,6 +2,7 @@ import { FastMCP } from 'fastmcp';
 import { z } from 'zod';
 import { RedmineClient } from '../api/redmine.ts';
 import { ServiceNowClient } from '../api/servicenow.ts';
+import { getFieldsDescription } from '../config/servicenow-fields.ts';
 
 const mcp = new FastMCP({ name: 'MyEnterpriseMCP', version: '1.0.0' });
 
@@ -80,15 +81,22 @@ Query syntax (sysparm_query format):
 - AND: "state=1^priority=2"
 - Dot-walk (reference field): "problem_id.number=PRB0040002"
 - Name search: "caller_id.name=John Doe"
-- Contains: "short_descriptionLIKEnetwork"`,
+- Contains: "short_descriptionLIKEnetwork"
+Set display_value=true to show human-readable values for reference fields (caller name, group name, etc.)
+Fields example per table:
+${getFieldsDescription()}`,
     parameters: z.object({
         table: z.string(),
         limit: z.number().optional().default(10),
         query: z.string().optional(),
+        fields: z.string().optional(),
+        display_value: z.boolean().optional().default(true),
     }),
     execute: async (args) => {
         const params: Record<string, unknown> = { sysparm_limit: args.limit };
         if (args.query) params.sysparm_query = args.query;
+        if (args.fields) params.sysparm_fields = args.fields;
+        params.sysparm_display_value = args.display_value ? 'true' : 'false';
         const data = await serviceNow.getRecords(args.table, params);
         return JSON.stringify(data, null, 2);
     },

@@ -5,6 +5,7 @@ import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import { RedmineClient } from '../api/redmine';
 import { ServiceNowClient } from '../api/servicenow';
+import { getFieldsDescription } from '../config/servicenow-fields';
 
 // Initialize clients
 const redmine = new RedmineClient({
@@ -77,15 +78,21 @@ Query syntax (sysparm_query format):
 - AND: "state=1^priority=2"
 - Dot-walk (reference field): "problem_id.number=PRB0040002"
 - Name search: "caller_id.name=John Doe"
-- Contains: "short_descriptionLIKEnetwork"`,
+- Contains: "short_descriptionLIKEnetwork"
+Fields example: "number,short_description,state,priority,caller_id,assignment_group,opened_at"
+Set display_value=true to show human-readable values for reference fields (caller name, group name, etc.)`,
     inputSchema: z.object({
         table: z.string(),
         limit: z.number().optional().default(10),
         query: z.string().optional(),
+        fields: z.string().optional(),
+        display_value: z.boolean().optional().default(true),
     }),
     execute: async (input) => {
         const params: Record<string, unknown> = { sysparm_limit: input.limit };
         if (input.query) params.sysparm_query = input.query;
+        if (input.fields) params.sysparm_fields = input.fields;
+        params.sysparm_display_value = input.display_value ? 'true' : 'false';
         return await serviceNow.getRecords(input.table, params);
     },
 });
@@ -120,7 +127,14 @@ export const agent = new Agent({
   - 部分一致: "short_descriptionLIKEキーワード"
 
   重要: incident.problem_idはsys_idへの参照フィールドのため、
-  PRB番号で検索する場合は必ず "problem_id.number=PRB0040002" の形式を使うこと。`,
+  PRB番号で検索する場合は必ず "problem_id.number=PRB0040002" の形式を使うこと。
+
+  取得項目を指定する場合は fields パラメータを使うこと。
+  fieldsを省略すると全フィールドが返る。以下は代表的なフィールド（自由に追加指定可能）:
+${getFieldsDescription()}
+
+  参照フィールド（caller_id, assignment_group等）は {display_value: "名前", link: "URL"} の形式で返る。
+  表示する際は display_value の値のみを使い、link や URL は表示しないこと。`,
     model: openai('gpt-4o'),
     tools: {
         getRedmineIssues,
