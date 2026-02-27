@@ -19,7 +19,10 @@ export class ServiceNowClient {
     private client: AxiosInstance;
 
     constructor(config: ServiceNowConfig) {
-        const baseURL = `https://${config.instance}.service-now.com/api/now/table`;
+        const base = config.instance.startsWith('http')
+            ? config.instance.replace(/\/$/, '')
+            : `https://${config.instance}.service-now.com`;
+        const baseURL = `${base}/api/now/table`;
         const headers: any = {
             'Content-Type': 'application/json',
         };
