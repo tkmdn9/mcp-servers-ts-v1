@@ -130,7 +130,8 @@ export const agent = new Agent({
   PRB番号で検索する場合は必ず "problem_id.number=PRB0040002" の形式を使うこと。
 
   取得項目を指定する場合は fields パラメータを使うこと。
-  fieldsを省略すると全フィールドが返る。以下は代表的なフィールド（自由に追加指定可能）:
+  「全ての項目を取得」「全フィールド」と言われた場合は fields を省略すること（省略すると全フィールド100以上が返る）。
+  以下は代表的なフィールド例であり、これ以外も自由に指定可能:
 ${getFieldsDescription()}
 
   参照フィールド（caller_id, assignment_group等）は {display_value: "名前", link: "URL"} の形式で返る。
