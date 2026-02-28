@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onMessage: (channel: string, func: (...args: any[]) => void) => {
         ipcRenderer.on(channel, (event, ...args) => func(...args));
     },
-    askAgent: (prompt: string) => ipcRenderer.invoke('ask-agent', prompt),
+    askAgent: (messages: { role: 'user' | 'assistant'; content: string }[]) =>
+        ipcRenderer.invoke('ask-agent', messages),
 });

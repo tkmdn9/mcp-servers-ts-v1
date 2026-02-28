@@ -45,6 +45,27 @@ mcp.addTool({
     },
 });
 
+mcp.addTool({
+    name: 'update_redmine_issue',
+    description: `Update an existing issue in Redmine.
+status_id: 1=New, 2=In Progress, 3=Resolved, 4=Feedback, 5=Closed, 6=Rejected
+priority_id: 1=Low, 2=Normal, 3=High, 4=Urgent, 5=Immediate`,
+    parameters: z.object({
+        id: z.number(),
+        subject: z.string().optional(),
+        description: z.string().optional(),
+        status_id: z.number().optional(),
+        priority_id: z.number().optional(),
+        assigned_to_id: z.number().optional(),
+        notes: z.string().optional(),
+    }),
+    execute: async (args) => {
+        const { id, ...issue } = args;
+        const data = await redmine.updateIssue(id, issue);
+        return JSON.stringify(data, null, 2);
+    },
+});
+
 // ServiceNow Tools
 mcp.addTool({
     name: 'get_servicenow_incidents',
@@ -114,6 +135,40 @@ mcp.addTool({
         const { table, ...record } = args;
         const data = await serviceNow.createRecord(table, record);
         return JSON.stringify(data, null, 2);
+    },
+});
+
+mcp.addTool({
+    name: 'update_servicenow_record',
+    description: `Update a record in any ServiceNow table.
+State values by table:
+  incident: 1=New, 2=In Progress, 3=On Hold, 6=Resolved, 7=Closed
+  problem: 100=Open, 102=Known Error, 103=Pending Change, 104=Closed/Resolved
+  change_request: -5=New, -4=Assess, -3=Authorize, -2=Scheduled, -1=Implement, 0=Review, 3=Closed
+close_code examples (incident): "Solved (Permanently)", "Solved (Work Around)", "Not Solved (Not Reproducible)"
+Use work_notes to add internal notes without notifying the caller.`,
+    parameters: z.object({
+        table: z.string(),
+        sys_id: z.string(),
+        short_description: z.string().optional(),
+        description: z.string().optional(),
+        state: z.number().optional(),
+        close_code: z.string().optional(),
+        close_notes: z.string().optional(),
+        work_notes: z.string().optional(),
+        assigned_to: z.string().optional(),
+        assignment_group: z.string().optional(),
+        priority: z.number().optional(),
+        urgency: z.number().optional(),
+        impact: z.number().optional(),
+    }),
+    execute: async (args) => {
+        const { table, sys_id, ...rest } = args;
+        const data = Object.fromEntries(
+            Object.entries(rest).filter(([, v]) => v !== undefined)
+        );
+        const result = await serviceNow.updateRecord(table, sys_id, data);
+        return JSON.stringify(result, null, 2);
     },
 });
 

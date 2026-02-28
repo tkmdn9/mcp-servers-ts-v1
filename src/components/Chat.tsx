@@ -9,7 +9,9 @@ export function Chat() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -23,12 +25,20 @@ export function Chat() {
 
         const userMessage = input.trim();
         setInput('');
-        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        if (textareaRef.current) textareaRef.current.style.height = 'auto';
+
+        const newUserMsg: Message = { role: 'user', content: userMessage };
+        setMessages(prev => [...prev, newUserMsg]);
         setIsLoading(true);
+
+        // error ロールを除いた会話履歴 + 今回の発言を配列で渡す
+        const history = [...messages, newUserMsg]
+            .filter(m => m.role !== 'error')
+            .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
         try {
             // @ts-ignore - electronAPI is injected via preload
-            const response = await window.electronAPI.askAgent(userMessage);
+            const response = await window.electronAPI.askAgent(history);
 
             if (response.error) {
                 setMessages(prev => [...prev, { role: 'error', content: `Error: ${response.error}` }]);
@@ -40,6 +50,12 @@ export function Chat() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleCopy = (content: string, index: number) => {
+        navigator.clipboard.writeText(content);
+        setCopiedIndex(index);
+        setTimeout(() => setCopiedIndex(null), 2000);
     };
 
     return (
@@ -59,13 +75,22 @@ export function Chat() {
                         key={i}
                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                        <div className={`max-w-[85%] p-3 rounded-lg text-sm shadow-md ${msg.role === 'user'
-                                ? 'bg-blue-600 text-white rounded-br-none'
-                                : msg.role === 'error'
-                                    ? 'bg-red-900/50 text-red-200 border border-red-700 rounded-bl-none'
-                                    : 'bg-slate-800 text-slate-100 border border-slate-700 rounded-bl-none'
-                            }`}>
-                            <div className="whitespace-pre-wrap">{msg.content}</div>
+                        <div className="group/msg relative max-w-[85%]">
+                            <div className={`p-3 rounded-lg text-sm shadow-md ${msg.role === 'user'
+                                    ? 'bg-blue-600 text-white rounded-br-none'
+                                    : msg.role === 'error'
+                                        ? 'bg-red-900/50 text-red-200 border border-red-700 rounded-bl-none'
+                                        : 'bg-slate-800 text-slate-100 border border-slate-700 rounded-bl-none'
+                                }`}>
+                                <div className="whitespace-pre-wrap">{msg.content}</div>
+                            </div>
+                            <button
+                                onClick={() => handleCopy(msg.content, i)}
+                                className={`absolute -top-2 ${msg.role === 'user' ? '-left-8' : '-right-8'} opacity-0 group-hover/msg:opacity-100 transition-opacity bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white rounded px-1.5 py-0.5 text-[10px] font-mono`}
+                                title="コピー"
+                            >
+                                {copiedIndex === i ? 'OK!' : 'copy'}
+                            </button>
                         </div>
                     </div>
                 ))}
@@ -81,18 +106,28 @@ export function Chat() {
             </div>
 
             <div className="p-3 bg-slate-800 border-t border-slate-700">
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white"
-                        placeholder="Type your command..."
+                <div className="flex gap-2 items-end">
+                    <textarea
+                        ref={textareaRef}
+                        rows={1}
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all text-white resize-none overflow-hidden"
+                        placeholder="Type your command... (Shift+Enter で改行)"
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                        onChange={(e) => {
+                            setInput(e.target.value);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px';
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                                e.preventDefault();
+                                handleSend();
+                            }
+                        }}
                         disabled={isLoading}
                     />
                     <button
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${isLoading
+                        className={`px-4 py-2 rounded-lg font-medium transition-all shrink-0 ${isLoading
                                 ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
                                 : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20'
                             }`}
@@ -102,6 +137,7 @@ export function Chat() {
                         {isLoading ? 'Wait...' : 'Send'}
                     </button>
                 </div>
+                <p className="text-[10px] text-slate-600 mt-1 ml-1">Enter で送信 / Shift+Enter で改行</p>
             </div>
         </div>
     );

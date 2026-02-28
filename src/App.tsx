@@ -48,10 +48,12 @@ function App() {
               {[
                 { name: 'getRedmineIssues', color: 'blue' },
                 { name: 'createRedmineIssue', color: 'blue' },
+                { name: 'updateRedmineIssue', color: 'blue' },
                 { name: 'getServiceNowIncidents', color: 'emerald' },
                 { name: 'createServiceNowIncident', color: 'emerald' },
                 { name: 'getServiceNowRecords', color: 'emerald' },
-                { name: 'createServiceNowRecord', color: 'emerald' }
+                { name: 'createServiceNowRecord', color: 'emerald' },
+                { name: 'updateServiceNowRecord', color: 'emerald' }
               ].map(tool => (
                 <div key={tool.name} className="group cursor-default">
                   <div className={`p-3 bg-slate-950/50 rounded-xl border border-slate-800/20 group-hover:border-${tool.color}-500/30 transition-all flex items-center gap-3`}>

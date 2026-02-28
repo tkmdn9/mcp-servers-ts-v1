@@ -55,8 +55,19 @@ function startMCPServer() {
 }
 
 // IPC Handlers
-ipcMain.handle('ask-agent', async (_event, prompt: string) => {
+ipcMain.handle('ask-agent', async (_event, messages: { role: 'user' | 'assistant'; content: string }[]) => {
     try {
+        const lastMessage = messages[messages.length - 1];
+        const history = messages.slice(0, -1);
+
+        let prompt = lastMessage.content;
+        if (history.length > 0) {
+            const contextText = history
+                .map(m => `${m.role === 'user' ? 'ユーザー' : 'アシスタント'}: ${m.content}`)
+                .join('\n\n');
+            prompt = `【会話履歴】\n${contextText}\n\n【現在の質問】\n${lastMessage.content}`;
+        }
+
         const result = await agent.generate(prompt);
         return { text: result.text };
     } catch (error: any) {
