@@ -164,6 +164,29 @@ Use work_notes to add internal notes without notifying the caller.`,
     },
 });
 
+const deleteRedmineIssue = createTool({
+    id: 'deleteRedmineIssue',
+    description: 'Delete an issue from Redmine. Use with caution as this is irreversible.',
+    inputSchema: z.object({
+        id: z.number(),
+    }),
+    execute: async (input) => {
+        return await redmine.deleteIssue(input.id);
+    },
+});
+
+const deleteServiceNowRecord = createTool({
+    id: 'deleteServiceNowRecord',
+    description: 'Delete a record from any ServiceNow table. Use with caution as this is irreversible.',
+    inputSchema: z.object({
+        table: z.string(),
+        sys_id: z.string(),
+    }),
+    execute: async (input) => {
+        return await serviceNow.deleteRecord(input.table, input.sys_id);
+    },
+});
+
 export const agent = new Agent({
     id: 'enterprise-brain',
     name: 'Enterprise Brain',
@@ -194,11 +217,13 @@ ${getFieldsDescription()}
         getRedmineIssues,
         createRedmineIssue,
         updateRedmineIssue,
+        deleteRedmineIssue,
         getServiceNowIncidents,
         createServiceNowIncident,
         getServiceNowRecords,
         createServiceNowRecord,
         updateServiceNowRecord,
+        deleteServiceNowRecord,
     },
 });
 

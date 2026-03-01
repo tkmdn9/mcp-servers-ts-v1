@@ -46,4 +46,9 @@ export class RedmineClient {
         const response = await this.client.put(`/issues/${id}.json`, { issue });
         return response.data;
     }
+
+    async deleteIssue(id: number) {
+        await this.client.delete(`/issues/${id}.json`);
+        return { success: true, message: `Issue #${id} deleted` };
+    }
 }

@@ -172,6 +172,31 @@ Use work_notes to add internal notes without notifying the caller.`,
     },
 });
 
+mcp.addTool({
+    name: 'delete_redmine_issue',
+    description: 'Delete an issue from Redmine. Use with caution as this is irreversible.',
+    parameters: z.object({
+        id: z.number(),
+    }),
+    execute: async (args) => {
+        const result = await redmine.deleteIssue(args.id);
+        return JSON.stringify(result, null, 2);
+    },
+});
+
+mcp.addTool({
+    name: 'delete_servicenow_record',
+    description: 'Delete a record from any ServiceNow table. Use with caution as this is irreversible.',
+    parameters: z.object({
+        table: z.string(),
+        sys_id: z.string(),
+    }),
+    execute: async (args) => {
+        const result = await serviceNow.deleteRecord(args.table, args.sys_id);
+        return JSON.stringify(result, null, 2);
+    },
+});
+
 // Start the server
 mcp.start({ transportType: 'stdio' });
 console.error('FastMCP server started with stdio transport');

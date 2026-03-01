@@ -59,4 +59,9 @@ export class ServiceNowClient {
         const response = await this.client.put(`/${tableName}/${sysId}`, record);
         return response.data;
     }
+
+    async deleteRecord(tableName: string, sysId: string) {
+        await this.client.delete(`/${tableName}/${sysId}`);
+        return { success: true, message: `Record ${sysId} deleted from ${tableName}` };
+    }
 }
