@@ -47,6 +47,9 @@ cp .env.example .env
 - `src/api/`: 各外部サービス（Redmine, ServiceNow）のクライアント実装
 - `scripts/`: ユーティリティスクリプト
 
+## MCP Inspectorの起動
+npm run inspect
+
 ## ⚠️ Git に関する注意
 
 機密情報（API キーなど）を含む `.env` ファイルは Git 追跡対象から除外されています。
