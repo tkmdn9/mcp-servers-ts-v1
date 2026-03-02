@@ -139,7 +139,11 @@ State values by table:
   problem: 100=Open, 102=Known Error, 103=Pending Change, 104=Closed/Resolved
   change_request: -5=New, -4=Assess, -3=Authorize, -2=Scheduled, -1=Implement, 0=Review, 3=Closed
 close_code examples (incident): "Solved (Permanently)", "Solved (Work Around)", "Not Solved (Not Reproducible)"
-Use work_notes to add internal notes without notifying the caller.`,
+Use work_notes to add internal notes without notifying the caller.
+Link fields (use sys_id values):
+  problem_id: link incident to a problem record
+  rfc: link incident to a change_request record
+  parent_incident: link incident to a parent incident`,
     inputSchema: z.object({
         table: z.string(),
         sys_id: z.string(),
@@ -154,6 +158,9 @@ Use work_notes to add internal notes without notifying the caller.`,
         priority: z.number().optional(),
         urgency: z.number().optional(),
         impact: z.number().optional(),
+        problem_id: z.string().optional(),
+        rfc: z.string().optional(),
+        parent_incident: z.string().optional(),
     }),
     execute: async (input) => {
         const { table, sys_id, ...rest } = input;
@@ -211,7 +218,16 @@ export const agent = new Agent({
 ${getFieldsDescription()}
 
   参照フィールド（caller_id, assignment_group等）は {display_value: "名前", link: "URL"} の形式で返る。
-  表示する際は display_value の値のみを使い、link や URL は表示しないこと。`,
+  表示する際は display_value の値のみを使い、link や URL は表示しないこと。
+
+  【インシデント・問題・変更管理チケットを同時作成してリンクする手順】
+  1. createServiceNowRecord で incident を作成 → レスポンスの result.sys_id を保存
+  2. createServiceNowRecord で problem を作成 → レスポンスの result.sys_id を保存
+  3. createServiceNowRecord で change_request を作成 → レスポンスの result.sys_id を保存
+  4. updateServiceNowRecord でインシデントを更新し、参照フィールドをセット:
+     - problem_id = (step2で取得したproblemのsys_id)
+     - rfc = (step3で取得したchange_requestのsys_id)
+  ※ problem_id と rfc には必ずsys_id（UUID形式）を指定すること（PRB/CHG番号ではリンクできない）`,
     model: openai('gpt-4o'),
     tools: {
         getRedmineIssues,

@@ -5,8 +5,17 @@ interface Message {
     content: string;
 }
 
+const STORAGE_KEY = 'chat_history';
+
 export function Chat() {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : [];
+        } catch {
+            return [];
+        }
+    });
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -18,6 +27,11 @@ export function Chat() {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
+    }, [messages]);
+
+    // Persist messages to localStorage
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     }, [messages]);
 
     const handleSend = async () => {
@@ -56,6 +70,11 @@ export function Chat() {
         navigator.clipboard.writeText(content);
         setCopiedIndex(index);
         setTimeout(() => setCopiedIndex(null), 2000);
+    };
+
+    const handleClear = () => {
+        localStorage.removeItem(STORAGE_KEY);
+        setMessages([]);
     };
 
     return (
@@ -135,6 +154,14 @@ export function Chat() {
                         disabled={isLoading}
                     >
                         {isLoading ? 'Wait...' : 'Send'}
+                    </button>
+                    <button
+                        className="px-3 py-2 rounded-lg font-medium transition-all shrink-0 bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-slate-200 text-sm"
+                        onClick={handleClear}
+                        disabled={isLoading}
+                        title="会話履歴をクリア"
+                    >
+                        Clear
                     </button>
                 </div>
                 <p className="text-[10px] text-slate-600 mt-1 ml-1">Enter で送信 / Shift+Enter で改行</p>

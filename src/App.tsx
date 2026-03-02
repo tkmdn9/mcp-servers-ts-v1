@@ -2,8 +2,8 @@ import { Chat } from './components/Chat.tsx'
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 font-sans">
-      <header className="mb-6 flex justify-between items-end">
+    <div className="min-h-screen bg-slate-950 text-white p-6 font-sans flex flex-col">
+      <header className="mb-6 flex justify-between items-end shrink-0">
         <div>
           <h1 className="text-3xl font-black bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent tracking-tight">
             Enterprise MCP Bridge
@@ -20,9 +20,9 @@ function App() {
         </div>
       </header>
 
-      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-160px)]">
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-200px)] min-h-[480px]">
         {/* Left Column: Stats & Tools */}
-        <div className="lg:col-span-4 space-y-6 flex flex-col">
+        <div className="lg:col-span-4 space-y-6 flex flex-col min-h-0">
           {/* Status Card */}
           <section className="bg-slate-900/50 backdrop-blur-xl p-5 rounded-2xl border border-slate-800/50 shadow-2xl">
             <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -44,7 +44,7 @@ function App() {
           {/* Tools Card */}
           <section className="bg-slate-900/50 backdrop-blur-xl p-5 rounded-2xl border border-slate-800/50 shadow-2xl flex-1 overflow-hidden flex flex-col">
             <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Registry Tools</h2>
-            <div className="space-y-2 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-2 overflow-y-auto flex-1 min-h-0 pr-2 custom-scrollbar">
               {[
                 { name: 'getRedmineIssues', color: 'blue' },
                 { name: 'createRedmineIssue', color: 'blue' },
@@ -86,7 +86,7 @@ function App() {
         </div>
       </main>
 
-      <footer className="mt-6 flex justify-between items-center text-[10px] text-slate-600 font-mono uppercase tracking-[0.2em]">
+      <footer className="mt-4 flex justify-between items-center text-[10px] text-slate-600 font-mono uppercase tracking-[0.2em] shrink-0">
         <span>&copy; 2026 Antigravity Systems</span>
         <div className="flex gap-4">
           <span className="hover:text-slate-400 cursor-pointer transition-colors">Documentation</span>

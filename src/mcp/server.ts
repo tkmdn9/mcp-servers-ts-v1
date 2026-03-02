@@ -146,7 +146,11 @@ State values by table:
   problem: 100=Open, 102=Known Error, 103=Pending Change, 104=Closed/Resolved
   change_request: -5=New, -4=Assess, -3=Authorize, -2=Scheduled, -1=Implement, 0=Review, 3=Closed
 close_code examples (incident): "Solved (Permanently)", "Solved (Work Around)", "Not Solved (Not Reproducible)"
-Use work_notes to add internal notes without notifying the caller.`,
+Use work_notes to add internal notes without notifying the caller.
+Link fields (use sys_id values):
+  problem_id: link incident to a problem record
+  rfc: link incident to a change_request record
+  parent_incident: link incident to a parent incident`,
     parameters: z.object({
         table: z.string(),
         sys_id: z.string(),
@@ -161,6 +165,9 @@ Use work_notes to add internal notes without notifying the caller.`,
         priority: z.number().optional(),
         urgency: z.number().optional(),
         impact: z.number().optional(),
+        problem_id: z.string().optional(),
+        rfc: z.string().optional(),
+        parent_incident: z.string().optional(),
     }),
     execute: async (args) => {
         const { table, sys_id, ...rest } = args;
