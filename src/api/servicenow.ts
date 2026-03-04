@@ -45,6 +45,12 @@ export class ServiceNowClient {
         return response.data;
     }
 
+    async getRecordsWithMeta(tableName: string, params?: any) {
+        const response = await this.client.get(`/${tableName}`, { params });
+        const total = parseInt(response.headers['x-total-count'] ?? '-1', 10);
+        return { data: response.data, total };
+    }
+
     async getRecord(tableName: string, sysId: string) {
         const response = await this.client.get(`/${tableName}/${sysId}`);
         return response.data;

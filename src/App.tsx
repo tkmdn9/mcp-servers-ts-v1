@@ -87,7 +87,6 @@ function App() {
       </main>
 
       <footer className="mt-4 flex justify-between items-center text-[10px] text-slate-600 font-mono uppercase tracking-[0.2em] shrink-0">
-        <span>&copy; 2026 Antigravity Systems</span>
         <div className="flex gap-4">
           <span className="hover:text-slate-400 cursor-pointer transition-colors">Documentation</span>
           <span className="hover:text-slate-400 cursor-pointer transition-colors">Security Audit</span>

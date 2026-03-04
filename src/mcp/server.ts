@@ -69,13 +69,24 @@ priority_id: 1=Low, 2=Normal, 3=High, 4=Urgent, 5=Immediate`,
 // ServiceNow Tools
 mcp.addTool({
     name: 'get_servicenow_incidents',
-    description: 'Get incidents from ServiceNow',
+    description: 'Get incidents from ServiceNow. Use offset for pagination. Response includes total and has_more so you can page through all records.',
     parameters: z.object({
         limit: z.number().optional().default(10),
+        offset: z.number().optional().default(0),
     }),
     execute: async (args) => {
-        const data = await serviceNow.getRecords('incident', { sysparm_limit: args.limit });
-        return JSON.stringify(data, null, 2);
+        const { data, total } = await serviceNow.getRecordsWithMeta('incident', {
+            sysparm_limit: args.limit,
+            sysparm_offset: args.offset,
+        });
+        const records: unknown[] = data.result ?? [];
+        return JSON.stringify({
+            records,
+            offset: args.offset,
+            limit: args.limit,
+            total,
+            has_more: total >= 0 ? args.offset + records.length < total : records.length === args.limit,
+        }, null, 2);
     },
 });
 
@@ -95,7 +106,7 @@ mcp.addTool({
 // ServiceNow Generic Tools
 mcp.addTool({
     name: 'get_servicenow_records',
-    description: `Get records from any ServiceNow table.
+    description: `Get records from any ServiceNow table with pagination support.
 Table examples: incident, problem, change_request, sc_request
 Query syntax (sysparm_query format):
 - Simple: "state=1"
@@ -104,22 +115,35 @@ Query syntax (sysparm_query format):
 - Name search: "caller_id.name=John Doe"
 - Contains: "short_descriptionLIKEnetwork"
 Set display_value=true to show human-readable values for reference fields (caller name, group name, etc.)
+Pagination: use offset to page through results (e.g. offset=0, offset=100, offset=200...).
+Response includes total count and has_more flag — keep calling with increasing offset while has_more=true.
 Fields example per table:
 ${getFieldsDescription()}`,
     parameters: z.object({
         table: z.string(),
         limit: z.number().optional().default(10),
+        offset: z.number().optional().default(0),
         query: z.string().optional(),
         fields: z.string().optional(),
         display_value: z.boolean().optional().default(true),
     }),
     execute: async (args) => {
-        const params: Record<string, unknown> = { sysparm_limit: args.limit };
+        const params: Record<string, unknown> = {
+            sysparm_limit: args.limit,
+            sysparm_offset: args.offset,
+        };
         if (args.query) params.sysparm_query = args.query;
         if (args.fields) params.sysparm_fields = args.fields;
         params.sysparm_display_value = args.display_value ? 'true' : 'false';
-        const data = await serviceNow.getRecords(args.table, params);
-        return JSON.stringify(data, null, 2);
+        const { data, total } = await serviceNow.getRecordsWithMeta(args.table, params);
+        const records: unknown[] = data.result ?? [];
+        return JSON.stringify({
+            records,
+            offset: args.offset,
+            limit: args.limit,
+            total,
+            has_more: total >= 0 ? args.offset + records.length < total : records.length === args.limit,
+        }, null, 2);
     },
 });
 

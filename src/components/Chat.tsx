@@ -164,7 +164,6 @@ export function Chat() {
                         Clear
                     </button>
                 </div>
-                <p className="text-[10px] text-slate-600 mt-1 ml-1">Enter で送信 / Shift+Enter で改行</p>
             </div>
         </div>
     );
