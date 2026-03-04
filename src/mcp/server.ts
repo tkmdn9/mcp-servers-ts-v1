@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { FastMCP } from 'fastmcp';
 import { z } from 'zod';
 import { RedmineClient } from '../api/redmine.ts';

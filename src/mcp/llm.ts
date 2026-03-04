@@ -104,16 +104,21 @@ Set display_value=true to show human-readable values for reference fields (calle
     inputSchema: z.object({
         table: z.string(),
         limit: z.number().optional().default(10),
+        offset: z.number().optional().default(0),
         query: z.string().optional(),
         fields: z.string().optional(),
         display_value: z.boolean().optional().default(true),
     }),
     execute: async (input) => {
-        const params: Record<string, unknown> = { sysparm_limit: input.limit };
+        const params: Record<string, unknown> = {
+            sysparm_limit: input.limit,
+            sysparm_offset: input.offset,
+        };
         if (input.query) params.sysparm_query = input.query;
         if (input.fields) params.sysparm_fields = input.fields;
         params.sysparm_display_value = input.display_value ? 'true' : 'false';
-        return await serviceNow.getRecords(input.table, params);
+        const { data, total } = await serviceNow.getRecordsWithMeta(input.table, params);
+        return { ...data, _meta: { total, offset: input.offset, limit: input.limit } };
     },
 });
 
@@ -212,6 +217,11 @@ export const agent = new Agent({
   重要: incident.problem_idはsys_idへの参照フィールドのため、
   PRB番号で検索する場合は必ず "problem_id.number=PRB0040002" の形式を使うこと。
 
+  【全量取得の方法】
+  全件取得が必要な場合は offset パラメータでページングすること。
+  レスポンスの _meta.total が総件数、_meta.offset が現在のオフセット。
+  例: limit=50, offset=0 → offset=50 → offset=100 と繰り返し、result の件数が0になるまで続ける。
+
   取得項目を指定する場合は fields パラメータを使うこと。
   「全ての項目を取得」「全フィールド」と言われた場合は fields を省略すること（省略すると全フィールド100以上が返る）。
   以下は代表的なフィールド例であり、これ以外も自由に指定可能:
@@ -228,7 +238,7 @@ ${getFieldsDescription()}
      - problem_id = (step2で取得したproblemのsys_id)
      - rfc = (step3で取得したchange_requestのsys_id)
   ※ problem_id と rfc には必ずsys_id（UUID形式）を指定すること（PRB/CHG番号ではリンクできない）`,
-    model: openai('gpt-4o'),
+    model: openai(process.env.OPENAI_MODEL || 'gpt-4o'),
     tools: {
         getRedmineIssues,
         createRedmineIssue,
