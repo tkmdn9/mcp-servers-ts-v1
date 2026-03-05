@@ -10,15 +10,19 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "mcp": "ts-node --esm src/mcp/server.ts",
-    "inspect": "npx @modelcontextprotocol/inspector node --env-file=.env --import=tsx/esm src/mcp/server.ts"
+    "mcp:http": "node --env-file=.env --import=tsx/esm src/mcp/hono-server.ts",
+    "inspect": "npx @modelcontextprotocol/inspector node --env-file=.env --import=tsx/esm src/mcp/server.ts",
+    "inspect:http": "npx @modelcontextprotocol/inspector"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.34",
+    "@hono/node-server": "^1.19.11",
     "@mastra/core": "^1.6.0",
     "@modelcontextprotocol/sdk": "^1.27.0",
     "axios": "^1.13.5",
     "dotenv": "^17.3.1",
     "fastmcp": "^3.33.0",
+    "hono": "^4.12.5",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "zod": "^4.3.6"
